@@ -1,7 +1,6 @@
 import { openDB } from 'https://cdn.jsdelivr.net/npm/idb@7/+esm';
 
-// створюємо базу
-const db = await openDB('habit-tracker', 1, {
+const dbPromise = openDB('habit-tracker', 1, {
   upgrade(db) {
     if (!db.objectStoreNames.contains('user')) {
       db.createObjectStore('user');
@@ -10,11 +9,8 @@ const db = await openDB('habit-tracker', 1, {
       const store = db.createObjectStore('track', { keyPath: 'id' });
       store.createIndex('by-date', 'date');
     }
-  }
+  },
 });
-
-// тест: виводимо базу в консоль
-console.log('[✅ DB ready]', db);
 
 let habits = [];
 
@@ -52,16 +48,44 @@ setupList.addEventListener('click', (e) => {
   }
 });
 
-function showToast(message, duration = 3000) {
-    const toast = document.querySelector('#toast');
-    const msg = document.querySelector('#toast-message');
-  
-    msg.textContent = message;
-    toast.classList.remove('hidden');
-    toast.classList.add('opacity-100');
-  
-    setTimeout(() => {
-      toast.classList.add('opacity-0');
-      setTimeout(() => toast.classList.add('hidden'), 300);
-    }, duration);
+const startBtn = document.querySelector('#start-tracking');
+const nameInput = document.querySelector('#username');
+const setupSection = document.querySelector('#setup');
+const trackerSection = document.querySelector('#tracker');
+const nameDisplay = document.querySelector('#user-name');
+const dateDisplay = document.querySelector('#today-date');
+
+startBtn.addEventListener('click', async () => {
+  const name = nameInput.value.trim();
+  if (!name || habits.length === 0) {
+    showToast('Please enter your name and at least one habit.');
+    return;
   }
+
+  try {
+    const db = await dbPromise;
+    await db.put('user', { name, habits }, 'profile');
+
+    nameDisplay.textContent = name;
+    dateDisplay.textContent = new Date().toLocaleDateString('en-GB');
+    setupSection.classList.add('hidden');
+    trackerSection.classList.remove('hidden');
+  } catch (error) {
+    showToast('Error saving data to the database.');
+    console.error('DB Error:', error);
+  }
+});
+
+function showToast(message, duration = 3000) {
+  const toast = document.querySelector('#toast');
+  const msg = document.querySelector('#toast-message');
+
+  msg.textContent = message;
+  toast.classList.remove('hidden');
+  toast.classList.add('opacity-100');
+
+  setTimeout(() => {
+    toast.classList.add('opacity-0');
+    setTimeout(() => toast.classList.add('hidden'), 300);
+  }, duration);
+}
