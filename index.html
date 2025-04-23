@@ -21,18 +21,67 @@
 
   <body class="bg-gradient-to-br from-teal-50 to-blue-100 min-h-screen p-4">
     <main class="max-w-md mx-auto bg-white shadow-lg rounded-xl p-6 space-y-6">
-      <header class="text-center">
-        <h1 class="text-2xl font-bold text-gray-800">🐾 Mini Habit Tracker</h1>
-        <p class="text-sm text-gray-500">Build better habits — one day at a time</p>
-      </header>
 
-      <section id="habit-list" class="space-y-4">
-        <!-- Habit checkboxes will be inserted here by JS -->
+      <!-- Setup Section -->
+      <section id="setup" class="space-y-4">
+        <header class="text-center">
+          <h1 class="text-2xl font-bold text-gray-800">🐾 Welcome!</h1>
+          <p class="text-sm text-gray-500">Enter your name and habits to get started</p>
+        </header>
+
+        <div>
+          <label class="block mb-2 text-sm font-medium text-gray-700">Your Name</label>
+          <input id="username" type="text" class="w-full border border-gray-300 rounded-md px-4 py-2" />
+        </div>
+
+        <div>
+          <label class="block mb-2 text-sm font-medium text-gray-700">Your Habits</label>
+          <div id="habit-setup-list" class="space-y-2"></div>
+          <div class="flex gap-2 mt-2">
+            <input id="new-habit" type="text" class="flex-grow border border-gray-300 rounded-md px-4 py-2" placeholder="Add new habit" />
+            <button id="add-habit" class="bg-teal-500 text-white px-4 py-2 rounded-md">Add</button>
+          </div>
+        </div>
+
+        <button id="start-tracking" class="w-full bg-teal-600 text-white py-2 px-4 rounded-md">Start Tracking</button>
       </section>
 
-      <div id="pet-reaction" class="text-center text-4xl mt-6">
-        <!-- Reaction emoji will go here -->
-      </div>
+      <!-- Tracker Section -->
+      <section id="tracker" class="hidden space-y-6">
+        <header class="text-center">
+          <h2 class="text-xl font-semibold text-gray-800">👋 Hello, <span id="user-name"></span>!</h2>
+          <p class="text-sm text-gray-500">Your habits for <span id="today-date"></span></p>
+        </header>
+
+        <section id="habit-list" class="space-y-4"></section>
+
+        <div id="pet-reaction" class="text-center text-4xl mt-6">🐶</div>
+
+        <div class="text-center">
+          <button id="edit-habits" class="text-xs text-teal-600 underline">Edit Habits</button>
+        </div>
+      </section>
+
+      <!-- Edit Habits Section -->
+      <section id="edit" class="hidden space-y-4">
+        <header class="text-center">
+          <h2 class="text-xl font-semibold text-gray-800">✏️ Edit Habits</h2>
+        </header>
+
+        <div id="edit-habit-list" class="space-y-2"></div>
+
+        <div class="flex gap-2">
+          <input id="edit-new-habit" type="text" class="flex-grow border border-gray-300 rounded-md px-4 py-2" placeholder="Add new habit" />
+          <button id="edit-add-habit" class="bg-teal-500 text-white px-4 py-2 rounded-md">Add</button>
+        </div>
+
+        <button id="save-habits" class="w-full bg-teal-600 text-white py-2 px-4 rounded-md">Save & Back</button>
+      </section>
+
+      <!-- Future: Weekly Stats Section (hidden for now) -->
+      <section id="stats" class="hidden">
+        <!-- Weekly summary will go here -->
+      </section>
 
       <footer class="text-center text-xs text-gray-400 pt-4">
         &copy; 2025 HabitTail. All paws reserved.
