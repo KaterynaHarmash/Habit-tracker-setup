@@ -1,3 +1,21 @@
+import { openDB } from 'https://cdn.jsdelivr.net/npm/idb@7/+esm';
+
+// створюємо базу
+const db = await openDB('habit-tracker', 1, {
+  upgrade(db) {
+    if (!db.objectStoreNames.contains('user')) {
+      db.createObjectStore('user');
+    }
+    if (!db.objectStoreNames.contains('track')) {
+      const store = db.createObjectStore('track', { keyPath: 'id' });
+      store.createIndex('by-date', 'date');
+    }
+  }
+});
+
+// тест: виводимо базу в консоль
+console.log('[✅ DB ready]', db);
+
 let habits = [];
 
 const setupList = document.querySelector('#habit-setup-list');
@@ -33,3 +51,17 @@ setupList.addEventListener('click', (e) => {
     renderHabits();
   }
 });
+
+function showToast(message, duration = 3000) {
+    const toast = document.querySelector('#toast');
+    const msg = document.querySelector('#toast-message');
+  
+    msg.textContent = message;
+    toast.classList.remove('hidden');
+    toast.classList.add('opacity-100');
+  
+    setTimeout(() => {
+      toast.classList.add('opacity-0');
+      setTimeout(() => toast.classList.add('hidden'), 300);
+    }, duration);
+  }
