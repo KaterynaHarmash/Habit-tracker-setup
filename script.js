@@ -70,6 +70,7 @@ startBtn.addEventListener('click', async () => {
     dateDisplay.textContent = new Date().toLocaleDateString('en-GB');
     setupSection.classList.add('hidden');
     trackerSection.classList.remove('hidden');
+    await renderDailyHabits();
   } catch (error) {
     showToast('Error saving data to the database.');
     console.error('DB Error:', error);
@@ -89,3 +90,42 @@ function showToast(message, duration = 3000) {
     setTimeout(() => toast.classList.add('hidden'), 300);
   }, duration);
 }
+
+const habitListSection = document.querySelector('#habit-list');
+const petReaction = document.querySelector('#pet-reaction');
+
+async function renderDailyHabits() {
+  const db = await dbPromise;
+  const profile = await db.get('user', 'profile');
+  const habits = profile?.habits || [];
+
+  habitListSection.innerHTML = '';
+
+  habits.forEach(habit => {
+    const id = `habit-${habit.toLowerCase().replace(/\s+/g, '-')}`;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'flex items-center gap-3';
+
+    wrapper.innerHTML = `
+      <input type="checkbox" id="${id}" data-habit="${habit}" class="w-5 h-5 text-teal-500 rounded" />
+      <label for="${id}" class="text-gray-700">${habit}</label>
+    `;
+
+    habitListSection.appendChild(wrapper);
+  });
+
+  // реакція тваринки: оновлюємо при кожному натисканні чекбокса
+  habitListSection.addEventListener('change', () => {
+    const total = habits.length;
+    const completed = habitListSection.querySelectorAll('input:checked').length;
+
+    if (completed === 0) {
+      petReaction.textContent = '😴'; // нічого не зроблено
+    } else if (completed < total) {
+      petReaction.textContent = '😺'; // частково
+    } else {
+      petReaction.textContent = '🎉🐶'; // все виконано!
+    }
+  });
+}
+
