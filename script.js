@@ -58,200 +58,203 @@ const HabitSetup = {
   }
 };
 
-const addBtn = document.querySelector('#add-habit');
-const input = document.querySelector('#new-habit');
-const setupList = document.querySelector('#habit-setup-list');
-const startBtn = document.querySelector('#start-tracking');
-const nameInput = document.querySelector('#username');
-const setupSection = document.querySelector('#setup');
-const trackerSection = document.querySelector('#tracker');
-const nameDisplay = document.querySelector('#user-name');
-const dateDisplay = document.querySelector('#today-date');
-const habitListSection = document.querySelector('#habit-list');
-const petReaction = document.querySelector('#pet-reaction');
-
-const editBtn = document.querySelector('#edit-habits');
-const editSection = document.querySelector('#edit');
-const editList = document.querySelector('#edit-habit-list');
-const editInput = document.querySelector('#edit-new-habit');
-const editAddBtn = document.querySelector('#edit-add-habit');
-const saveEditBtn = document.querySelector('#save-habits');
-
-editBtn.addEventListener('click', async () => {
-  const db = await dbPromise;
-  const profile = await db.get('user', 'profile');
-  HabitSetup.init(profile.habits);
-  HabitSetup.render('#edit-habit-list');
-  trackerSection.classList.add('hidden');
-  editSection.classList.remove('hidden');
-});
-
-editAddBtn.addEventListener('click', () => {
-  const value = editInput.value.trim();
-  if (!value) return;
-  HabitSetup.add(value);
-  editInput.value = '';
-  HabitSetup.render('#edit-habit-list');
-});
-
-editList.addEventListener('click', (e) => {
-  if (e.target.tagName === 'BUTTON') {
-    const index = e.target.dataset.index;
-    HabitSetup.remove(index);
-    HabitSetup.render('#edit-habit-list');
-  }
-});
-
-saveEditBtn.addEventListener('click', async () => {
-  await HabitSetup.updateStoredHabits();
-  editSection.classList.add('hidden');
-  trackerSection.classList.remove('hidden');
-  await renderDailyHabits();
-  await renderWeeklyDashboard()
-});
-
-addBtn.addEventListener('click', () => {
-  const value = input.value.trim();
-  if (!value) return;
-  HabitSetup.add(value);
-  input.value = '';
-});
-
-setupList.addEventListener('click', (e) => {
-  if (e.target.tagName === 'BUTTON') {
-    const index = e.target.dataset.index;
-    HabitSetup.remove(index);
-  }
-});
-
-startBtn.addEventListener('click', async () => {
-  const name = nameInput.value.trim();
-  if (!name || HabitSetup.habits.length === 0) {
-    showToast('Please enter your name and at least one habit.');
-    return;
-  }
-
-  try {
-    await HabitSetup.save(name);
-    nameDisplay.textContent = name;
-    dateDisplay.textContent = new Date().toLocaleDateString('en-GB');
-    setupSection.classList.add('hidden');
-    trackerSection.classList.remove('hidden');
-    await renderDailyHabits();
-    await renderWeeklyDashboard();
-  } catch (error) {
-    showToast('Error saving data to the database.');
-    console.error('DB Error:', error);
-  }
-});
-
-function showToast(message, duration = 3000) {
-  const toast = document.querySelector('#toast');
-  const msg = document.querySelector('#toast-message');
-  msg.textContent = message;
-  toast.classList.remove('hidden');
-  toast.classList.add('opacity-100');
-
-  setTimeout(() => {
-    toast.classList.add('opacity-0');
-    setTimeout(() => toast.classList.add('hidden'), 300);
-  }, duration);
-}
-
-async function renderDailyHabits() {
-  const db = await dbPromise;
-  const profile = await db.get('user', 'profile');
-  const habits = profile?.habits || [];
-
-  const dateStr = new Date().toISOString().split('T')[0];
-  const completedToday = {};
-
-  for (const habit of habits) {
-    const id = `${dateStr}|${habit}`;
-    const record = await db.get('track', id);
-    if (record?.done) completedToday[habit] = true;
-  }
-
-  habitListSection.innerHTML = '';
-
-  habits.forEach(habit => {
-    const id = `habit-${habit.toLowerCase().replace(/\s+/g, '-')}`;
-    const isDone = completedToday[habit] || false;
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'flex items-center gap-3';
-    wrapper.innerHTML = `
-      <input type="checkbox" id="${id}" data-habit="${habit}" class="w-5 h-5 text-teal-500 rounded" ${isDone ? 'checked' : ''} />
-      <label for="${id}" class="text-gray-700">${habit}</label>
-    `;
-    habitListSection.appendChild(wrapper);
-  });
-
-  const total = habits.length;
-  const completed = Object.values(completedToday).filter(Boolean).length;
-  petReaction.textContent = completed === 0 ? '😴' : completed < total ? '😺' : '🎉🐶';
-
-  habitListSection.addEventListener('change', async () => {
-    const checkboxes = habitListSection.querySelectorAll('input[type="checkbox"]');
-    const doneCount = habitListSection.querySelectorAll('input:checked').length;
-    petReaction.textContent = doneCount === 0 ? '😴' : doneCount < habits.length ? '😺' : '🎉🐶';
-
-    const db = await dbPromise;
-    checkboxes.forEach(async checkbox => {
-      const habit = checkbox.dataset.habit;
-      const done = checkbox.checked;
-      const id = `${dateStr}|${habit}`;
-      await db.put('track', { id, date: dateStr, habit, done });
-    });
-  });
-}
-
 document.addEventListener('DOMContentLoaded', async () => {
+  const addBtn = document.querySelector('#add-habit');
+  const input = document.querySelector('#new-habit');
+  const setupList = document.querySelector('#habit-setup-list');
+  const startBtn = document.querySelector('#start-tracking');
+  const nameInput = document.querySelector('#username');
+  const setupSection = document.querySelector('#setup');
+  const trackerSection = document.querySelector('#tracker');
+  const nameDisplay = document.querySelector('#user-name');
+  const dateDisplay = document.querySelector('#today-date');
+  const habitListSection = document.querySelector('#habit-list');
+  const petReaction = document.querySelector('#pet-reaction');
+  const editBtn = document.querySelector('#edit-habits');
+  const editSection = document.querySelector('#edit');
+  const editList = document.querySelector('#edit-habit-list');
+  const editInput = document.querySelector('#edit-new-habit');
+  const editAddBtn = document.querySelector('#edit-add-habit');
+  const saveEditBtn = document.querySelector('#save-habits');
+  const dashboardSection = document.querySelector('#weekly-dashboard');
+
   const db = await dbPromise;
   const profile = await db.get('user', 'profile');
 
+  // Welcome view or auto-login
   if (profile && profile.name && Array.isArray(profile.habits)) {
     setupSection.classList.add('hidden');
     trackerSection.classList.remove('hidden');
+    dashboardSection.classList.remove('hidden');
     nameDisplay.textContent = profile.name;
     dateDisplay.textContent = new Date().toLocaleDateString('en-GB');
     await renderDailyHabits();
-    await renderWeeklyDashboard()
+    await renderWeeklyDashboard();
   }
-});
-async function renderWeeklyDashboard() {
-  const db = await dbPromise;
-  const profile = await db.get('user', 'profile');
-  const habits = profile?.habits || [];
 
-  const body = document.querySelector('#dashboard-body');
-  const header = document.querySelector('#dashboard-header');
-  body.innerHTML = '';
-  header.innerHTML = '<th class="p-2">Habit</th>';
-
-  const days = [...Array(7)].map((_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    return d.toISOString().split('T')[0];
+  addBtn.addEventListener('click', () => {
+    const value = input.value.trim();
+    if (!value) return;
+    HabitSetup.add(value);
+    input.value = '';
   });
 
-  // Header: дати
-  days.forEach(date => {
-    const short = new Date(date).toLocaleDateString('en-GB', { weekday: 'short' });
-    header.innerHTML += `<th class="p-2">${short}</th>`;
+  setupList.addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON') {
+      const index = e.target.dataset.index;
+      HabitSetup.remove(index);
+    }
   });
 
-  // Body: по звичках
-  for (const habit of habits) {
-    const row = document.createElement('tr');
-    row.innerHTML = `<td class="p-2 font-medium text-left">${habit}</td>`;
-
-    for (const date of days) {
-      const record = await db.get('track', `${date}|${habit}`);
-      const mark = record?.done ? '✅' : '✖️';
-      row.innerHTML += `<td class="p-2">${mark}</td>`;
+  startBtn.addEventListener('click', async () => {
+    const name = nameInput.value.trim();
+    if (!name || HabitSetup.habits.length === 0) {
+      showToast('Please enter your name and at least one habit.');
+      return;
     }
 
-    body.appendChild(row);
+    try {
+      await HabitSetup.save(name);
+      nameDisplay.textContent = name;
+      dateDisplay.textContent = new Date().toLocaleDateString('en-GB');
+      setupSection.classList.add('hidden');
+      trackerSection.classList.remove('hidden');
+      dashboardSection.classList.remove('hidden');
+      await renderDailyHabits();
+      await renderWeeklyDashboard();
+    } catch (error) {
+      showToast('Error saving data to the database.');
+      console.error('DB Error:', error);
+    }
+  });
+
+  editBtn.addEventListener('click', async () => {
+    const db = await dbPromise;
+    const profile = await db.get('user', 'profile');
+    HabitSetup.init(profile.habits);
+    HabitSetup.render('#edit-habit-list');
+    trackerSection.classList.add('hidden');
+    editSection.classList.remove('hidden');
+  });
+
+  editAddBtn.addEventListener('click', () => {
+    const value = editInput.value.trim();
+    if (!value) return;
+    HabitSetup.add(value);
+    editInput.value = '';
+    HabitSetup.render('#edit-habit-list');
+  });
+
+  editList.addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON') {
+      const index = e.target.dataset.index;
+      HabitSetup.remove(index);
+      HabitSetup.render('#edit-habit-list');
+    }
+  });
+
+  saveEditBtn.addEventListener('click', async () => {
+    await HabitSetup.updateStoredHabits();
+    editSection.classList.add('hidden');
+    trackerSection.classList.remove('hidden');
+    dashboardSection.classList.remove('hidden');
+    await renderDailyHabits();
+    await renderWeeklyDashboard();
+  });
+
+  async function renderDailyHabits() {
+    const db = await dbPromise;
+    const profile = await db.get('user', 'profile');
+    const habits = profile?.habits || [];
+
+    const dateStr = new Date().toISOString().split('T')[0];
+    const completedToday = {};
+
+    for (const habit of habits) {
+      const id = `${dateStr}|${habit}`;
+      const record = await db.get('track', id);
+      if (record?.done) completedToday[habit] = true;
+    }
+
+    habitListSection.innerHTML = '';
+
+    habits.forEach(habit => {
+      const id = `habit-${habit.toLowerCase().replace(/\s+/g, '-')}`;
+      const isDone = completedToday[habit] || false;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex items-center gap-3';
+      wrapper.innerHTML = `
+        <input type="checkbox" id="${id}" data-habit="${habit}" class="w-5 h-5 text-teal-500 rounded" ${isDone ? 'checked' : ''} />
+        <label for="${id}" class="text-gray-700">${habit}</label>
+      `;
+      habitListSection.appendChild(wrapper);
+    });
+
+    const total = habits.length;
+    const completed = Object.values(completedToday).filter(Boolean).length;
+    petReaction.textContent = completed === 0 ? '😴' : completed < total ? '😺' : '🎉🐶';
+
+    habitListSection.addEventListener('change', async () => {
+      const checkboxes = habitListSection.querySelectorAll('input[type="checkbox"]');
+      const doneCount = habitListSection.querySelectorAll('input:checked').length;
+      petReaction.textContent = doneCount === 0 ? '😴' : doneCount < habits.length ? '😺' : '🎉🐶';
+
+      const db = await dbPromise;
+      checkboxes.forEach(async checkbox => {
+        const habit = checkbox.dataset.habit;
+        const done = checkbox.checked;
+        const id = `${dateStr}|${habit}`;
+        await db.put('track', { id, date: dateStr, habit, done });
+      });
+    });
   }
-}
+
+  async function renderWeeklyDashboard() {
+    const db = await dbPromise;
+    const profile = await db.get('user', 'profile');
+    const habits = profile?.habits || [];
+
+    const body = document.querySelector('#dashboard-body');
+    const header = document.querySelector('#dashboard-header');
+    body.innerHTML = '';
+    header.innerHTML = '<th class="p-2">Habit</th>';
+
+    const days = [...Array(7)].map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return d.toISOString().split('T')[0];
+    });
+
+    days.forEach(date => {
+      const short = new Date(date).toLocaleDateString('en-GB', { weekday: 'short' });
+      header.innerHTML += `<th class="p-2">${short}</th>`;
+    });
+
+    for (const habit of habits) {
+      const row = document.createElement('tr');
+      row.innerHTML = `<td class="p-2 font-medium text-left">${habit}</td>`;
+
+      for (const date of days) {
+        const record = await db.get('track', `${date}|${habit}`);
+        const mark = record?.done ? '✅' : '✖️';
+        row.innerHTML += `<td class="p-2">${mark}</td>`;
+      }
+
+      body.appendChild(row);
+    }
+  }
+
+  function showToast(message, duration = 3000) {
+    const toast = document.querySelector('#toast');
+    const msg = document.querySelector('#toast-message');
+    msg.textContent = message;
+    toast.classList.remove('hidden');
+    toast.classList.add('opacity-100');
+
+    setTimeout(() => {
+      toast.classList.add('opacity-0');
+      setTimeout(() => toast.classList.add('hidden'), 300);
+    }, duration);
+  }
+});

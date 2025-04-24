@@ -37,10 +37,21 @@
         <div>
           <label class="block mb-2 text-sm font-medium text-gray-700">Your Habits</label>
           <div id="habit-setup-list" class="space-y-2"></div>
-          <div class="flex gap-2 mt-2">
-            <input id="new-habit" type="text" class="flex-grow border border-gray-300 rounded-md px-4 py-2" placeholder="Add new habit" />
-            <button id="add-habit" class="bg-teal-500 text-white px-4 py-2 rounded-md">Add</button>
+          <div class="flex flex-col sm:flex-row gap-2 w-full mt-4">
+            <input
+              type="text"
+              id="edit-new-habit"
+              placeholder="Add new habit"
+              class="w-full px-3 py-2 rounded border border-gray-300"
+            />
+            <button
+              id="edit-add-habit"
+              class="bg-teal-500 text-white px-4 py-2 rounded w-full sm:w-auto"
+            >
+              Add
+            </button>
           </div>
+          
         </div>
 
         <button id="start-tracking" class="w-full bg-teal-600 text-white py-2 px-4 rounded-md">Start Tracking</button>
@@ -70,15 +81,26 @@
 
         <div id="edit-habit-list" class="space-y-2"></div>
 
-        <div class="flex gap-2">
-          <input id="edit-new-habit" type="text" class="flex-grow border border-gray-300 rounded-md px-4 py-2" placeholder="Add new habit" />
-          <button id="edit-add-habit" class="bg-teal-500 text-white px-4 py-2 rounded-md">Add</button>
+        <div class="flex flex-col sm:flex-row gap-2 w-full mt-4">
+          <input
+            type="text"
+            id="edit-new-habit"
+            placeholder="Add new habit"
+            class="w-full px-3 py-2 rounded border border-gray-300"
+          />
+          <button
+            id="edit-add-habit"
+            class="bg-teal-500 text-white px-4 py-2 rounded w-full sm:w-auto"
+          >
+            Add
+          </button>
         </div>
+        
 
         <button id="save-habits" class="w-full bg-teal-600 text-white py-2 px-4 rounded-md">Save & Back</button>
       </section>
 
-      <section class="mt-8" id="weekly-dashboard">
+      <section class="mt-8 hidden" id="weekly-dashboard">
         <h2 class="text-lg font-semibold mb-2 text-center">📊 Weekly Progress</h2>
         <div class="overflow-x-auto">
           <table class="min-w-full table-auto border text-sm text-center bg-white rounded-lg shadow">
