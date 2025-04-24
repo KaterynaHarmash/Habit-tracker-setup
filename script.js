@@ -160,7 +160,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     trackerSection.classList.remove('hidden');
     dashboardSection.classList.remove('hidden');
     await renderDailyHabits();
-    await renderWeeklyDashboard();
   });
 
   async function renderDailyHabits() {
