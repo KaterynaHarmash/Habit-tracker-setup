@@ -135,6 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     HabitSetup.render('#edit-habit-list');
     trackerSection.classList.add('hidden');
     editSection.classList.remove('hidden');
+    dashboardSection.classList.add('hidden');
   });
 
   editAddBtn.addEventListener('click', () => {
@@ -207,13 +208,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const id = `${dateStr}|${habit}`;
         await db.put('track', { id, date: dateStr, habit, done });
       });
+      await renderWeeklyDashboard();
     });
   }
 
   async function renderWeeklyDashboard() {
     const db = await dbPromise;
     const profile = await db.get('user', 'profile');
-    const habits = profile?.habits || [];
+    let habits = [];
+    habits = profile?.habits || [];
 
     const body = document.querySelector('#dashboard-body');
     const header = document.querySelector('#dashboard-header');
