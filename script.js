@@ -208,7 +208,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const id = `${dateStr}|${habit}`;
         await db.put('track', { id, date: dateStr, habit, done });
       });
-      await renderWeeklyDashboard();
     });
   }
 
