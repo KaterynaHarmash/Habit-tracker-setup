@@ -78,9 +78,16 @@
         <button id="save-habits" class="w-full bg-teal-600 text-white py-2 px-4 rounded-md">Save & Back</button>
       </section>
 
-      <!-- Future: Weekly Stats Section (hidden for now) -->
-      <section id="stats" class="hidden">
-        <!-- Weekly summary will go here -->
+      <section class="mt-8" id="weekly-dashboard">
+        <h2 class="text-lg font-semibold mb-2 text-center">📊 Weekly Progress</h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full table-auto border text-sm text-center bg-white rounded-lg shadow">
+            <thead>
+              <tr id="dashboard-header" class="bg-gray-100 text-gray-600"></tr>
+            </thead>
+            <tbody id="dashboard-body"></tbody>
+          </table>
+        </div>
       </section>
 
       <footer class="text-center text-xs text-gray-400 pt-4">

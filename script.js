@@ -107,6 +107,7 @@ saveEditBtn.addEventListener('click', async () => {
   editSection.classList.add('hidden');
   trackerSection.classList.remove('hidden');
   await renderDailyHabits();
+  await renderWeeklyDashboard()
 });
 
 addBtn.addEventListener('click', () => {
@@ -137,6 +138,7 @@ startBtn.addEventListener('click', async () => {
     setupSection.classList.add('hidden');
     trackerSection.classList.remove('hidden');
     await renderDailyHabits();
+    await renderWeeklyDashboard();
   } catch (error) {
     showToast('Error saving data to the database.');
     console.error('DB Error:', error);
@@ -214,5 +216,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     nameDisplay.textContent = profile.name;
     dateDisplay.textContent = new Date().toLocaleDateString('en-GB');
     await renderDailyHabits();
+    await renderWeeklyDashboard()
   }
 });
+async function renderWeeklyDashboard() {
+  const db = await dbPromise;
+  const profile = await db.get('user', 'profile');
+  const habits = profile?.habits || [];
+
+  const body = document.querySelector('#dashboard-body');
+  const header = document.querySelector('#dashboard-header');
+  body.innerHTML = '';
+  header.innerHTML = '<th class="p-2">Habit</th>';
+
+  const days = [...Array(7)].map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return d.toISOString().split('T')[0];
+  });
+
+  // Header: дати
+  days.forEach(date => {
+    const short = new Date(date).toLocaleDateString('en-GB', { weekday: 'short' });
+    header.innerHTML += `<th class="p-2">${short}</th>`;
+  });
+
+  // Body: по звичках
+  for (const habit of habits) {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td class="p-2 font-medium text-left">${habit}</td>`;
+
+    for (const date of days) {
+      const record = await db.get('track', `${date}|${habit}`);
+      const mark = record?.done ? '✅' : '✖️';
+      row.innerHTML += `<td class="p-2">${mark}</td>`;
+    }
+
+    body.appendChild(row);
+  }
+}
