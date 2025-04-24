@@ -68,7 +68,7 @@ const HabitSetup = {
   const trackerSection = document.querySelector('#tracker');
   const nameDisplay = document.querySelector('#user-name');
   const dateDisplay = document.querySelector('#today-date');
-  const habitListSection = document.querySelector('#habit-list');
+  let habitListSection = document.querySelector('#habit-list');
   const petReaction = document.querySelector('#pet-reaction');
   const editBtn = document.querySelector('#edit-habits');
   const editSection = document.querySelector('#edit');
@@ -190,6 +190,11 @@ const HabitSetup = {
         <label for="${id}" class="text-gray-700">${habit}</label>
       `;
       habitListSection.appendChild(wrapper);
+
+      const newSection = habitListSection.cloneNode(true);
+      habitListSection.replaceWith(newSection);
+      habitListSection = document.querySelector('#habit-list');
+
     });
 
     const total = habits.length;
@@ -208,7 +213,7 @@ const HabitSetup = {
         const id = `${dateStr}|${habit}`;
         await db.put('track', { id, date: dateStr, habit, done });
       });
-      
+      await renderWeeklyDashboard();
     });
   }
 
