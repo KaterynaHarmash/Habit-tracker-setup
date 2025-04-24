@@ -58,7 +58,7 @@ const HabitSetup = {
   }
 };
 
-document.addEventListener('DOMContentLoaded', async () => {
+
   const addBtn = document.querySelector('#add-habit');
   const input = document.querySelector('#new-habit');
   const setupList = document.querySelector('#habit-setup-list');
@@ -160,6 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     trackerSection.classList.remove('hidden');
     dashboardSection.classList.remove('hidden');
     await renderDailyHabits();
+    await renderWeeklyDashboard();
   });
 
   async function renderDailyHabits() {
@@ -207,15 +208,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const id = `${dateStr}|${habit}`;
         await db.put('track', { id, date: dateStr, habit, done });
       });
-      await renderWeeklyDashboard();
+      
     });
   }
 
   async function renderWeeklyDashboard() {
     const db = await dbPromise;
     const profile = await db.get('user', 'profile');
-    let habits = [];
-    habits = profile?.habits || [];
+    const habits = profile?.habits || [];
 
     const body = document.querySelector('#dashboard-body');
     const header = document.querySelector('#dashboard-header');
@@ -232,7 +232,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       const short = new Date(date).toLocaleDateString('en-GB', { weekday: 'short' });
       header.innerHTML += `<th class="p-2">${short}</th>`;
     });
-
     for (const habit of habits) {
       const row = document.createElement('tr');
       row.innerHTML = `<td class="p-2 font-medium text-left">${habit}</td>`;
@@ -259,4 +258,4 @@ document.addEventListener('DOMContentLoaded', async () => {
       setTimeout(() => toast.classList.add('hidden'), 300);
     }, duration);
   }
-});
+
